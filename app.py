@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -6,6 +6,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///goal.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+app.secret_key = 'your_secret_key'
 
 class Goal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -26,6 +27,7 @@ def add_goal():
         new_goal = Goal(name=request.form['name'], category=request.form['category'])
         db.session.add(new_goal)
         db.session.commit()
+        flash('Goal added successfully!', 'success')
         return redirect(url_for('home'))
     return render_template('add.html')
 
@@ -34,6 +36,8 @@ def delete_goal(id):
     goal = Goal.query.get_or_404(id)
     db.session.delete(goal)
     db.session.commit()
+    flash('Goal delete successfully!', 'danger')
+
     return redirect(url_for('home'))
 
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
@@ -44,6 +48,8 @@ def edit_goal(id):
         goal.name = request.form['name']
         goal.category = request.form['category']
         db.session.commit()
+        flash('Goal updated successfully!', 'info')
+
         return redirect(url_for('home'))
     return render_template('edit.html', goal=goal)
 
